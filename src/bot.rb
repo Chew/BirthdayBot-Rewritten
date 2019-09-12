@@ -11,6 +11,8 @@ module Bot
   # Bot configuration
   CONFIG = OpenStruct.new YAML.load_file 'data/config.yaml'
 
+  Starttime = Time.now
+
   # Create the bot.
   # The bot is created as a constant, so that you
   # can access the cache anywhere.
@@ -37,6 +39,19 @@ module Bot
 
   load_modules(:DiscordEvents, 'events')
   load_modules(:DiscordCommands, 'commands')
+
+  BOT.command(:reload) do |event|
+    break unless event.user.id == CONFIG.owner
+
+    m = event.respond "Reloading..."
+
+    BOT.clear!
+
+    load_modules(:DiscordEvents, 'events')
+    load_modules(:DiscordCommands, 'commands')
+
+    m.edit "Reloaded! uwu"
+  end
 
   # Run the bot
   BOT.run

@@ -23,7 +23,7 @@ module Bot::DiscordCommands
     command(:commands) do |event|
       begin
         event.channel.send_embed do |embed|
-          embed.title = 'Birthdays Bot Commands'
+          embed.title = 'BirthdaysBot Commands'
           embed.colour = '36399A'
 
           embed.add_field(name: 'Bot Commands', value: [
@@ -78,7 +78,7 @@ module Bot::DiscordCommands
     end
 
     command(:info, aliases: [:bot]) do |event|
-      t = Time.now - Starttime
+      t = Time.now - Bot::Starttime
       mm, ss = t.divmod(60)
       hh, mm = mm.divmod(60)
       dd, hh = hh.divmod(24)
@@ -97,9 +97,9 @@ module Bot::DiscordCommands
 
       begin
         event.channel.send_embed do |e|
-          e.title = 'HQ Trivia Bot Stats!'
+          e.title = 'Birthdays Bot Stats!'
 
-          e.add_field(name: 'Author', value: event.bot.user(CONFIG.owner).distinct, inline: true)
+          e.add_field(name: 'Author', value: event.bot.user(Bot::CONFIG.owner).distinct, inline: true)
           e.add_field(name: 'Code', value: '[Code on GitHub](https://github.com/Chew/BirthdaysBot)', inline: true)
           e.add_field(name: 'Bot Version', value: botversion, inline: true) unless botversion == ''
           e.add_field(name: 'Library', value: 'discordrb 3.3.0', inline: true)
