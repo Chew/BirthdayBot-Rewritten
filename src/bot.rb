@@ -3,16 +3,18 @@ require 'discordrb'
 require 'ostruct'
 require 'yaml'
 
+# Bot configuration
+CONFIG = OpenStruct.new YAML.load_file 'data/config.yaml'
+
+
+# Load non-Discordrb modules and models
+Dir['src/modules/*.rb'].each { |mod| load mod }
+Dir['src/models/*.rb'].each { |mod| load mod }
+
+Starttime = Time.now
+
 # The main bot module.
 module Bot
-  # Load non-Discordrb modules
-  Dir['src/modules/*.rb'].each { |mod| load mod }
-
-  # Bot configuration
-  CONFIG = OpenStruct.new YAML.load_file 'data/config.yaml'
-
-  Starttime = Time.now
-
   # Create the bot.
   # The bot is created as a constant, so that you
   # can access the cache anywhere.

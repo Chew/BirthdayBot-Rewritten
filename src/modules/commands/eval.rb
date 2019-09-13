@@ -5,7 +5,7 @@ module Bot::DiscordCommands
   module Eval
     extend Discordrb::Commands::CommandContainer
     command(:eval, help_available: false) do |event, *code|
-      break unless event.user.id == Bot::CONFIG.owner
+      break unless event.user.id == CONFIG.owner
 
       begin
         event.channel.send_embed do |e|

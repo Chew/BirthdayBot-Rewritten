@@ -78,7 +78,7 @@ module Bot::DiscordCommands
     end
 
     command(:info, aliases: [:bot]) do |event|
-      t = Time.now - Bot::Starttime
+      t = Time.now - Starttime
       mm, ss = t.divmod(60)
       hh, mm = mm.divmod(60)
       dd, hh = hh.divmod(24)
@@ -99,7 +99,7 @@ module Bot::DiscordCommands
         event.channel.send_embed do |e|
           e.title = 'Birthdays Bot Stats!'
 
-          e.add_field(name: 'Author', value: event.bot.user(Bot::CONFIG.owner).distinct, inline: true)
+          e.add_field(name: 'Author', value: event.bot.user(CONFIG.owner).distinct, inline: true)
           e.add_field(name: 'Code', value: '[Code on GitHub](https://github.com/Chew/BirthdaysBot)', inline: true)
           e.add_field(name: 'Bot Version', value: botversion, inline: true) unless botversion == ''
           e.add_field(name: 'Library', value: 'discordrb 3.3.0', inline: true)

@@ -3,7 +3,7 @@ module Bot::DiscordEvents
   module Ready
     extend Discordrb::EventContainer
     ready do |event|
-      event.bot.game = Bot::CONFIG.game
+      event.bot.game = CONFIG.game
     end
   end
 end
