@@ -2,10 +2,19 @@
 require 'discordrb'
 require 'ostruct'
 require 'yaml'
+require 'active_record'
 
 # Bot configuration
 CONFIG = OpenStruct.new YAML.load_file 'data/config.yaml'
 
+# ActiveRecord Database
+ActiveRecord::Base.establish_connection(
+  adapter:  'mysql2', # or 'postgresql' or 'sqlite3' or 'oracle_enhanced'
+  host:     CONFIG.db['host'],
+  database: CONFIG.db['database'],
+  username: CONFIG.db['username'],
+  password: CONFIG.db['password']
+)
 
 # Load non-Discordrb modules and models
 Dir['src/modules/*.rb'].each { |mod| load mod }
