@@ -36,13 +36,14 @@ module Bot::DiscordCommands
           ].join("\n"), inline: false)
 
           embed.add_field(name: 'Birthday Commands', value: [
-            '`bday set [birthday]` - Set your birthday, prefer mm/dd/yyyy in any format.',
-            '`bday get [user]` - Get a user\'s Birthday..'
+            '`bday get (user)` - Get a user\'s Birthday, leave blank for yours.',
+            '`bday set [birthday]` - Set your birthday, prefer mm/dd/yyyy gmt. Supply `--help` for more info.',
+            '`bday flip` - Flips your Birthday Month/Year, can only be used once.'
           ].join("\n"), inline: false)
 
           embed.add_field(name: 'Bot Profile Commands', value: [
             '`bday profile` - See your profile.',
-            '`bday set year (hide|show)` - Show/hide your birth year.'
+            #'`bday set year (hide|show)` - Show/hide your birth year.'
           ].join("\n"), inline: false)
         end
       rescue Discordrb::Errors::NoPermission
