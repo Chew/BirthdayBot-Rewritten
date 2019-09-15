@@ -26,7 +26,7 @@ module Bot::DiscordCommands
         begin
           event.channel.send_embed do |embed|
             embed.title = "Birthday Information for #{target.distinct}"
-            embed.add_field(name: "Birthday", value: "#{day.strftime("%B %-d, %Y")} GMT #{day.offset}")
+            embed.add_field(name: "Birthday", value: day.pretty)
             embed.colour = 0x25E86F
           end
         rescue Discordrb::Errors::NoPermission
