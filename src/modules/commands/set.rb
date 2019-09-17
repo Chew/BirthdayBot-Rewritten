@@ -57,6 +57,10 @@ module Bot::DiscordCommands
           end
         end
 
+        m2 = month
+        month = daye
+        daye = m2
+
         return [Time.new(year, month, daye, 0, 0, 0), gmt]
       else
         return nil
@@ -103,7 +107,7 @@ module Bot::DiscordCommands
         end
 
         bigdeal = output[0]
-        gmt = output[1]
+        gmt = output[1].to_f
 
         if gmt > 14
           gmt = 14
@@ -111,13 +115,12 @@ module Bot::DiscordCommands
           gmt = -11
         end
 
-        bigdeal = Time.new(year, month, daye, 0, 0, 0)
-        Birthday.create(userid: event.user.id, birthday: bigdeal, offset: gmt)
+        newday = Birthday.create(userid: event.user.id, birthday: bigdeal, offset: gmt)
         begin
           m.delete
           event.channel.send_embed do |embed|
           embed.title = "Birthday Updated for #{event.user.distinct}"
-          embed.add_field(name: "Birthday", value: "Set to #{Birthday.find_by(userid: event.user.id).pretty}")
+          embed.add_field(name: "Birthday", value: "Set to #{newday.pretty}")
           embed.footer = { text: "Meant day, month? Type bday flip" }
           embed.color = 0xFFDF9C
           end
@@ -141,6 +144,11 @@ module Bot::DiscordCommands
 
         if (yourday.created.to_i - Time.now.to_i) > 600
           event.respond "You set your Birthday too long ago and can no longer flip it. If you need help, go to the support server with `bday support`"
+          break
+        end
+
+        if yourday.birthday.day > 12
+          event.respond "There aren't more than 12 months, so you can't really flip!"
           break
         end
 
