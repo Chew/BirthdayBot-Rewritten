@@ -24,6 +24,7 @@ module Bot::DiscordCommands
       begin
         event.channel.send_embed do |embed|
           embed.title = 'BirthdaysBot Commands'
+          embed.description = "Get help on most commands by adding `-h` to the command. E.g. `bday set -h`"
           embed.colour = '36399A'
 
           embed.add_field(name: 'Bot Commands', value: [
@@ -75,7 +76,13 @@ module Bot::DiscordCommands
     end
 
     command(:invite) do |event|
-      event.respond 'Hello! Invite me to your server here: <https://discordapp.com/oauth2/authorize?client_id=620430054857506826&permissions=18432&scope=bot>. Join my help server here: https://discord.gg/FFtFJgb'
+      begin
+        event.channel.send_embed do |embed|
+          embed.description = "[**Invite Me!**](https://discordapp.com/oauth2/authorize?client_id=620430054857506826&permissions=18432&scope=bot)\n[**Join The Help Server**](https://discord.gg/NFuygsZ)"
+        end
+      rescue Discordrb::Errors::NoPermission
+        event.respond 'Hello! Invite me to your server here: <https://discordapp.com/oauth2/authorize?client_id=620430054857506826&permissions=18432&scope=bot>. Join my help server here: https://discord.gg/NFuygsZ'
+      end
     end
 
     command(:info, aliases: [:bot]) do |event|
