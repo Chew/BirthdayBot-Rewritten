@@ -3,7 +3,7 @@ module Bot::DiscordCommands
   module Admin
     extend Discordrb::Commands::CommandContainer
     command(:reset) do |event, user|
-      unless Bot::BOT.server(621525131214192653).member(event.user.id).roles.include?(Bot::BOT.server(621525131214192653).role(621528165814370324))
+      unless Bot::BOT.server(473364634301366273).member(event.user.id).roles.include?(Bot::BOT.server(473364634301366273).role(474304351091949578))
         event.respond "NO ADMIN? NO RESET!"
         break
       end
