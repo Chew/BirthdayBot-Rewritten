@@ -53,12 +53,12 @@ module Bot::DiscordCommands
             if u.roles.include?(serv.role(server.roleid))
               unchanged += 1
             else
-              serv.member(user.id).add_role(server.roleid)
+              serv.member(u.id).add_role(server.roleid)
               given += 1
             end
           else
             if u.roles.include?(serv.role(server.roleid))
-              serv.member(user.id).remove_role(server.roleid)
+              serv.member(u.id).remove_role(server.roleid)
               taken += 1
             else
               unchanged += 1
@@ -207,12 +207,12 @@ module Bot::DiscordCommands
             if u.roles.include?(serv.role(server.roleid))
               unchanged += 1
             else
-              serv.member(user.id).add_role(server.roleid)
+              serv.member(u.id).add_role(server.roleid)
               given += 1
             end
           else
             if u.roles.include?(serv.role(server.roleid))
-              serv.member(user.id).remove_role(server.roleid)
+              serv.member(u.id).remove_role(server.roleid)
               taken += 1
             else
               unchanged += 1
