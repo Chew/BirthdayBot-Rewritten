@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Gems
 require 'discordrb'
 require 'ostruct'
@@ -14,8 +16,8 @@ Scheduler = Rufus::Scheduler.new
 
 # ActiveRecord Database
 ActiveRecord::Base.establish_connection(
-  adapter:  'mysql2', # or 'postgresql' or 'sqlite3' or 'oracle_enhanced'
-  host:     CONFIG.db['host'],
+  adapter: 'mysql2', # or 'postgresql' or 'sqlite3' or 'oracle_enhanced'
+  host: CONFIG.db['host'],
   database: CONFIG.db['database'],
   username: CONFIG.db['username'],
   password: CONFIG.db['password']
@@ -37,7 +39,7 @@ module Bot
                                             prefix: CONFIG.prefix,
                                             num_shards: CONFIG.shards,
                                             shard_id: ARGV[0].to_i,
-                                          )
+                                            compress_mode: :large)
 
   # This class method wraps the module lazy-loading process of discordrb command
   # and event modules. Any module name passed to this method will have its child
@@ -62,14 +64,14 @@ module Bot
   BOT.command(:reload) do |event|
     break unless event.user.id == CONFIG.owner
 
-    m = event.respond "Reloading..."
+    m = event.respond 'Reloading...'
 
     BOT.clear!
 
     load_modules(:DiscordEvents, 'events')
     load_modules(:DiscordCommands, 'commands')
 
-    m.edit "Reloaded! uwu"
+    m.edit 'Reloaded! uwu'
   end
 
   # Run the bot
