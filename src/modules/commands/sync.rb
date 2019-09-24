@@ -168,7 +168,7 @@ module Bot::DiscordCommands
         sids.push e.serverid
       end
       bigbois = event.bot.servers
-      bigbois.delete_if { |e| !sids.include?(e.id) }
+      bigbois.delete_if { |e, _f| !sids.include?(e) }
 
       i = 0
       no = 0
