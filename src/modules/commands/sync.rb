@@ -5,6 +5,7 @@ module Bot::DiscordCommands
   module Sync
     extend Discordrb::Commands::CommandContainer
     Scheduler.cron('*/30 * * * *') do
+      break
       total = Bot::BOT.servers.count
       m = Bot::BOT.channel(625812110781317120).send "Syncing every server's Birthdays!\nStatus: 0/#{total}"
 
@@ -32,7 +33,7 @@ module Bot::DiscordCommands
         i += 1
         server = Server.find_by(serverid: id)
         if server.nil? || server.roleid.nil?
-          m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{total}"
+          m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{total}"
           break
         end
 
@@ -67,7 +68,7 @@ module Bot::DiscordCommands
           end
         end
 
-        m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{total}"
+        m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{total}"
       end
       m.edit "Syncing complete. All servers synced, however #{no} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]"
     end
@@ -166,6 +167,7 @@ module Bot::DiscordCommands
       given = 0
       taken = 0
       unchanged = 0
+      failed = 0
 
       ays = Server.all
       sids = []
@@ -181,11 +183,13 @@ module Bot::DiscordCommands
         uids[e.userid] = [e.birthday, e.time_friendly_offset]
       end
 
-      m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{bigbois}, however #{total - bigbois} servers didn't have a role."
-
       i = 0
+
+      m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{bigbois.length}, however #{total - bigbois.length} servers didn't have a role."
+
       no = 0
       bigbois.each do |id, serv|
+        serv = event.bot.server(id)
         i += 1
         server = Server.find_by(serverid: id)
 
@@ -207,22 +211,30 @@ module Bot::DiscordCommands
             if u.roles.include?(serv.role(server.roleid))
               unchanged += 1
             else
-              serv.member(u.id).add_role(server.roleid)
-              given += 1
+              begin
+                serv.member(u.id).add_role(server.roleid)
+                given += 1
+              rescue Discordrb::Errors::NoPermission
+                failed += 1
+              end
             end
           else
             if u.roles.include?(serv.role(server.roleid))
-              serv.member(u.id).remove_role(server.roleid)
-              taken += 1
+              begin
+                serv.member(u.id).remove_role(server.roleid)
+                taken += 1
+              rescue Discordrb::Errors::NoPermission
+                failed += 1
+              end
             else
               unchanged += 1
             end
           end
         end
 
-        m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{bigbois}, however #{total - bigbois} servers didn't have a role."
+        m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{bigbois.length}, however #{total - bigbois.length} servers didn't have a role."
       end
-      m.edit "Syncing complete. All servers synced, however #{no} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]"
+      m.edit "Syncing complete. All servers synced, however #{no} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]. The bot couldn't sync #{failed} due to permission errors."
     end
   end
 end
