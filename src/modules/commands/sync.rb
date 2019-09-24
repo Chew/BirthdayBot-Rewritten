@@ -138,12 +138,12 @@ module Bot::DiscordCommands
           if u.roles.include?(event.server.role(server.roleid))
             unchanged += 1
           else
-            event.server.member(user.id).add_role(server.roleid)
+            event.server.member(u.id).add_role(server.roleid)
             given += 1
           end
         else
           if u.roles.include?(event.server.role(server.roleid))
-            event.server.member(user.id).remove_role(server.roleid)
+            event.server.member(u.id).remove_role(server.roleid)
             taken += 1
           else
             unchanged += 1
@@ -162,6 +162,10 @@ module Bot::DiscordCommands
         break
       end
 
+      given = 0
+      taken = 0
+      unchanged = 0
+
       ays = Server.all
       sids = []
       ays.each do |e|
@@ -179,10 +183,6 @@ module Bot::DiscordCommands
           m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{total}"
           break
         end
-
-        given = 0
-        taken = 0
-        unchanged = 0
 
         days = Birthday.all
         uids = {}
@@ -222,7 +222,7 @@ module Bot::DiscordCommands
 
         m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{total}"
       end
-      m.edit "Syncing complete. All servers synced, however #{no} servers didn't have a role."
+      m.edit "Syncing complete. All servers synced, however #{no} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]"
     end
   end
 end
