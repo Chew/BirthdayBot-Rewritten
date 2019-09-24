@@ -16,6 +16,16 @@ module Bot::DiscordCommands
       bigbois = Bot::BOT.servers
       bigbois.delete_if { |e, _f| !sids.include?(e) }
 
+      days = Birthday.all
+      uids = {}
+      days.each do |e|
+        uids[e.userid] = [e.birthday, e.time_friendly_offset]
+      end
+
+      given = 0
+      taken = 0
+      unchanged = 0
+
       i = 0
       no = 0
       bigbois.each do |id, serv|
@@ -26,15 +36,6 @@ module Bot::DiscordCommands
           break
         end
 
-        given = 0
-        taken = 0
-        unchanged = 0
-
-        days = Birthday.all
-        uids = {}
-        days.each do |e|
-          uids[e.userid] = [e.birthday, e.time_friendly_offset]
-        end
         goodguys = serv.members
         goodguys.delete_if { |e| !uids.include?(e.id) }
 
@@ -68,7 +69,7 @@ module Bot::DiscordCommands
 
         m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{total}"
       end
-      m.edit "Syncing complete. All servers synced, however #{no} servers didn't have a role."
+      m.edit "Syncing complete. All servers synced, however #{no} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]"
     end
 
     command(:sync) do |event|
@@ -174,21 +175,20 @@ module Bot::DiscordCommands
       bigbois = event.bot.servers
       bigbois.delete_if { |e, _f| !sids.include?(e) }
 
+      days = Birthday.all
+      uids = {}
+      days.each do |e|
+        uids[e.userid] = [e.birthday, e.time_friendly_offset]
+      end
+
+      m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{bigbois}, however #{total - bigbois} servers didn't have a role."
+
       i = 0
       no = 0
       bigbois.each do |id, serv|
         i += 1
         server = Server.find_by(serverid: id)
-        if server.nil? || server.roleid.nil?
-          m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{total}"
-          break
-        end
 
-        days = Birthday.all
-        uids = {}
-        days.each do |e|
-          uids[e.userid] = [e.birthday, e.time_friendly_offset]
-        end
         goodguys = serv.members
         goodguys.delete_if { |e| !uids.include?(e.id) }
 
@@ -220,7 +220,7 @@ module Bot::DiscordCommands
           end
         end
 
-        m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{total}"
+        m.edit "Syncing every server's Birthdays!\nStatus: #{i+1}/#{bigbois}, however #{total - bigbois} servers didn't have a role."
       end
       m.edit "Syncing complete. All servers synced, however #{no} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]"
     end
