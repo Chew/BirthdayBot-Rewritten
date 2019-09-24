@@ -3,9 +3,14 @@ require 'discordrb'
 require 'ostruct'
 require 'yaml'
 require 'active_record'
+require 'rufus-scheduler'
 
 # Bot configuration
 CONFIG = OpenStruct.new YAML.load_file 'data/config.yaml'
+
+puts "Starting bot on Shard ##{ARGV[0]} / #{CONFIG.shards}"
+
+Scheduler = Rufus::Scheduler.new
 
 # ActiveRecord Database
 ActiveRecord::Base.establish_connection(
@@ -29,7 +34,10 @@ module Bot
   # can access the cache anywhere.
   BOT = Discordrb::Commands::CommandBot.new(client_id: CONFIG.client_id,
                                             token: CONFIG.token,
-                                            prefix: CONFIG.prefix)
+                                            prefix: CONFIG.prefix,
+                                            num_shards: CONFIG.shards,
+                                            shard_id: ARGV[0].to_i,
+                                          )
 
   # This class method wraps the module lazy-loading process of discordrb command
   # and event modules. Any module name passed to this method will have its child
