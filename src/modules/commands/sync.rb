@@ -102,7 +102,7 @@ module Bot::DiscordCommands
 
     command(:syncall) do |event|
       m = event.respond 'Syncing all people with the Birthday role!'
-      unless event.user.permission?(:manage_server)
+      unless event.user.permission?(:manage_server) || Bot::BOT.server(473364634301366273).member(event.user.id).roles.include?(Bot::BOT.server(473364634301366273).role(474304351091949578))
         event.respond 'Only people with Manage Server can force a full sync.'
         break
       end
@@ -157,12 +157,14 @@ module Bot::DiscordCommands
     end
 
     command(:syncglobal) do |event|
-      total = event.bot.servers.count
-      m = event.respond "Syncing every server's Birthdays!\nStatus: 0/#{total}"
       unless Bot::BOT.server(473364634301366273).member(event.user.id).roles.include?(Bot::BOT.server(473364634301366273).role(474304351091949578))
         event.respond "NO ADMIN? NO SYNCGLOBAL!"
         break
       end
+
+      total = event.bot.servers.count
+      puts "SyncGlobal Status - Total Servers: #{total}"
+      m = event.respond "Syncing every server's Birthdays!\nStatus: 0/#{total}"
 
       given = 0
       taken = 0
@@ -175,7 +177,6 @@ module Bot::DiscordCommands
         sids.push e.serverid
       end
       bigbois = event.bot.servers
-      bigbois.delete_if { |e, _f| !sids.include?(e) }
 
       days = Birthday.all
       uids = {}
@@ -185,12 +186,19 @@ module Bot::DiscordCommands
 
       i = 0
 
-      m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{bigbois.length}, however #{total - bigbois.length} servers didn't have a role."
+      m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{bigbois.length}."
+      norole = 0
 
       no = 0
       bigbois.each do |id, serv|
-        serv = event.bot.server(id)
         i += 1
+        if !sids.include?(id)
+          puts "SyncGlobal Status - [#{i}] Skipping #{serv.name} (#{serv.id}), no role ID."
+          norole += 1
+          next
+        end
+        serv = event.bot.server(id)
+        puts "SyncGlobal Status - [#{i}] Testing #{serv.name} (#{serv.id})"
         server = Server.find_by(serverid: id)
 
         goodguys = serv.members
@@ -212,6 +220,7 @@ module Bot::DiscordCommands
               unchanged += 1
             else
               begin
+                puts "SyncGlobal Status - Gave role to #{u.distinct} (#{u.id}) on #{serv.name} (#{serv.id})"
                 serv.member(u.id).add_role(server.roleid)
                 given += 1
               rescue Discordrb::Errors::NoPermission
@@ -221,6 +230,7 @@ module Bot::DiscordCommands
           else
             if u.roles.include?(serv.role(server.roleid))
               begin
+                puts "SyncGlobal Status - Took role from #{u.distinct} (#{u.id}) on #{serv.name} (#{serv.id})"
                 serv.member(u.id).remove_role(server.roleid)
                 taken += 1
               rescue Discordrb::Errors::NoPermission
@@ -232,9 +242,10 @@ module Bot::DiscordCommands
           end
         end
 
-        m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{bigbois.length}, however #{total - bigbois.length} servers didn't have a role."
+        m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{bigbois.length}."
+        puts "SyncGlobal Status - [#{i}] #{serv.name} (#{serv.id}) DONE"
       end
-      m.edit "Syncing complete. All servers synced, however #{no} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]. The bot couldn't sync #{failed} due to permission errors."
+      m.edit "Syncing complete. All servers synced, however #{norole} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]. The bot couldn't sync #{failed} due to permission errors."
     end
   end
 end
