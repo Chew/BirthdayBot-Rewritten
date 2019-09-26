@@ -11,7 +11,7 @@ module Bot::DiscordCommands
           embed.description = "The Birthdays bot helps you and your friends'* birthdays!!\n\n\n*obviously assuming you have friends."
 
           embed.add_field(name: 'Commands', value: 'Command list can be found with `bday commands`', inline: true)
-          embed.add_field(name: 'Invite me!', value: 'You can invite me to your server with [this link](https://discordapp.com/oauth2/authorize?client_id=620430054857506826&permissions=18432&scope=bot).', inline: true)
+          embed.add_field(name: 'Invite me!', value: 'You can invite me to your server with [this link](https://discordapp.com/oauth2/authorize?scope=bot&client_id=473284664711446529&permissions=268717120).', inline: true)
           embed.add_field(name: 'Help Server', value: 'Click [me](https://discord.gg/FFtFJgb) to join the help server.', inline: true)
           embed.add_field(name: 'More Bot Stats', value: 'Run `bday info` to see more stats!', inline: true)
         end
@@ -75,13 +75,13 @@ module Bot::DiscordCommands
       end
     end
 
-    command(:invite) do |event|
+    command(:invite, aliases: [:support]) do |event|
       begin
         event.channel.send_embed do |embed|
-          embed.description = "[**Invite Me!**](https://discordapp.com/oauth2/authorize?client_id=620430054857506826&permissions=18432&scope=bot)\n[**Join The Help Server**](https://discord.gg/NFuygsZ)"
+          embed.description = "[**Invite Me!**](https://discordapp.com/oauth2/authorize?scope=bot&client_id=473284664711446529&permissions=268717120)\n[**Join The Help Server**](https://discord.gg/NFuygsZ)"
         end
       rescue Discordrb::Errors::NoPermission
-        event.respond 'Hello! Invite me to your server here: <https://discordapp.com/oauth2/authorize?client_id=620430054857506826&permissions=18432&scope=bot>. Join my help server here: https://discord.gg/NFuygsZ'
+        event.respond 'Hello! Invite me to your server here: <https://discordapp.com/oauth2/authorize?scope=bot&client_id=473284664711446529&permissions=268717120>. Join my help server here: https://discord.gg/NFuygsZ'
       end
     end
 
