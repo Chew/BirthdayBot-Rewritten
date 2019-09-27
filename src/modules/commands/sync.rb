@@ -43,9 +43,19 @@ module Bot::DiscordCommands
           norole += 1
           next
         end
-        serv = Bot::BOT.server(id)
-        puts "SyncGlobal Status - [#{i}] Testing #{serv.name} (#{serv.id})"
         server = Server.find_by(serverid: id)
+        if server.roleid.nil? || server.roleid == ''
+          puts "SyncGlobal Status - [#{i}] Skipping #{serv.name} (#{serv.id}), no role ID."
+          norole += 1
+          next
+        end
+        serv = Bot::BOT.server(id)
+        if serv.nil?
+          puts "SyncGlobal Status - [#{i}] Skipping #{serv.name} (#{serv.id}) - Doesn't exist?"
+          norole += 1
+          next
+        end
+        puts "SyncGlobal Status - [#{i}] Testing #{serv.name} (#{serv.id})"
 
         goodguys = serv.members
         goodguys.delete_if { |e| !uids.include?(e.id) }
@@ -61,13 +71,26 @@ module Bot::DiscordCommands
           end
           day = Time.new(now.year, userday.month, userday.day, 0, 0, 0, user[1]).to_i
           day2 = (day + 86_399).to_i
+          role = serv.role(server.roleid)
+          member = serv.member(u.id)
+          if member.nil?
+            puts "SyncGlobal Status - [#{i}] Skipped #{u.id} on #{serv.name} (#{serv.id}) - Member was nil"
+            next
+          end
+          if role.nil?
+            puts "SyncGlobal Status - [#{i}] CANCELLED #{serv.name} (#{serv.id}) - Deleted Birthday Role :("
+            server.roleid = nil
+            server.save!
+            norole += 1
+            break
+          end
           if Time.new(now.year, now.month, now.day, now.hour, now.min, now.sec, user[1]).to_i.between?(day, day2)
             if u.roles.include?(serv.role(server.roleid))
               unchanged += 1
             else
               begin
-                puts "SyncGlobal Status - Gave role to #{u.distinct} (#{u.id}) on #{serv.name} (#{serv.id})"
                 serv.member(u.id).add_role(server.roleid)
+                puts "SyncGlobal Status - Gave role to #{u.distinct} (#{u.id}) on #{serv.name} (#{serv.id})"
                 given += 1
               rescue Discordrb::Errors::NoPermission
                 failed += 1
@@ -76,8 +99,8 @@ module Bot::DiscordCommands
           else
             if u.roles.include?(serv.role(server.roleid))
               begin
-                puts "SyncGlobal Status - Took role from #{u.distinct} (#{u.id}) on #{serv.name} (#{serv.id})"
                 serv.member(u.id).remove_role(server.roleid)
+                puts "SyncGlobal Status - Took role from #{u.distinct} (#{u.id}) on #{serv.name} (#{serv.id})"
                 taken += 1
               rescue Discordrb::Errors::NoPermission
                 failed += 1
@@ -220,9 +243,19 @@ module Bot::DiscordCommands
           norole += 1
           next
         end
-        serv = event.bot.server(id)
-        puts "SyncGlobal Status - [#{i}] Testing #{serv.name} (#{serv.id})"
         server = Server.find_by(serverid: id)
+        if server.roleid.nil? || server.roleid == ''
+          puts "SyncGlobal Status - [#{i}] Skipping #{serv.name} (#{serv.id}), no role ID."
+          norole += 1
+          next
+        end
+        serv = event.bot.server(id)
+        if serv.nil?
+          puts "SyncGlobal Status - [#{i}] Skipping #{serv.name} (#{serv.id}) - Doesn't exist?"
+          norole += 1
+          next
+        end
+        puts "SyncGlobal Status - [#{i}] Testing #{serv.name} (#{serv.id})"
 
         goodguys = serv.members
         goodguys.delete_if { |e| !uids.include?(e.id) }
@@ -238,13 +271,26 @@ module Bot::DiscordCommands
           end
           day = Time.new(now.year, userday.month, userday.day, 0, 0, 0, user[1]).to_i
           day2 = (day + 86_399).to_i
+          role = serv.role(server.roleid)
+          member = serv.member(u.id)
+          if member.nil?
+            puts "SyncGlobal Status - [#{i}] Skipped #{u.id} on #{serv.name} (#{serv.id}) - Member was nil"
+            next
+          end
+          if role.nil?
+            puts "SyncGlobal Status - [#{i}] CANCELLED #{serv.name} (#{serv.id}) - Deleted Birthday Role :("
+            server.roleid = nil
+            server.save!
+            norole += 1
+            break
+          end
           if Time.new(now.year, now.month, now.day, now.hour, now.min, now.sec, user[1]).to_i.between?(day, day2)
             if u.roles.include?(serv.role(server.roleid))
               unchanged += 1
             else
               begin
-                puts "SyncGlobal Status - Gave role to #{u.distinct} (#{u.id}) on #{serv.name} (#{serv.id})"
                 serv.member(u.id).add_role(server.roleid)
+                puts "SyncGlobal Status - Gave role to #{u.distinct} (#{u.id}) on #{serv.name} (#{serv.id})"
                 given += 1
               rescue Discordrb::Errors::NoPermission
                 failed += 1
@@ -272,6 +318,7 @@ module Bot::DiscordCommands
         end
         puts "SyncGlobal Status - [#{i}] #{serv.name} (#{serv.id}) DONE"
       end
+      puts "SyncGlobal Status - DONE"
       m.edit "Syncing complete. All servers synced, however #{norole} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]. The bot couldn't sync #{failed} due to permission errors."
     end
   end
