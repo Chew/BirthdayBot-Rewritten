@@ -10,8 +10,8 @@ module Bot::DiscordCommands
 
       if day.match?(/(.+)\/(.+)\/(.+) (\+|-|)(.+)/)
         date = day.split('/')[0..2].map(&:to_i)
-        month = date[0]
-        daye = date[1]
+        month = date[0].to_i
+        daye = date[1].to_i
         year = date[2].to_i
         gmt = date.split(' ')[1]
         if gmt.include?(':')
@@ -22,8 +22,8 @@ module Bot::DiscordCommands
         end
       elsif day.split(',').length.between?(3, 4)
         date = day.split(',')
-        month = date[0]
-        daye = date[1]
+        month = date[0].to_i
+        daye = date[1].to_i
         year = date[2].to_i
         if date.length > 3
           gmt = date[3]
@@ -36,8 +36,8 @@ module Bot::DiscordCommands
         end
       elsif day.split(' ').length.between?(3, 4)
         date = day.split(' ')
-        month = date[0]
-        daye = date[1]
+        month = date[0].to_i
+        daye = date[1].to_i
         year = date[2].to_i
         if date.length > 3
           gmt = date[3]
@@ -48,23 +48,30 @@ module Bot::DiscordCommands
             end
           end
         end
-
-        if year.to_s.length <= 2
-          if year <= Time.now.year % 100
-            year += 2000
-          else
-            year += 1999
-          end
-        end
-
-        m2 = month
-        month = daye
-        daye = m2
-
-        return [Time.new(year, month, daye, 0, 0, 0), gmt]
       else
         return nil
       end
+
+      if year.to_s.length <= 2
+        if year <= Time.now.year % 100
+          year += 2000
+        else
+          year += 1999
+        end
+      end
+
+      if month.to_i > 12
+        m2 = month
+        month = daye
+        daye = m2
+      end
+
+      begin
+        dat = Time.new(year, month, daye, 0, 0, 0)
+      rescue ArgumentError
+        return nil
+      end
+      [dat, gmt]
     end
 
     command(:set) do |event, *input|
@@ -186,11 +193,6 @@ module Bot::DiscordCommands
 
       bigdeal = output[0]
       gmt = output[1]
-
-      if bigdeal.nil?
-        event.respond "Yeah so big brain time. your format isn't supported. kinda sucks. anyway, like and subscribe and try a new format"
-        break
-      end
 
       event.respond "Birthday parsed as: #{bigdeal.strftime("%B %-d, %Y")} GMT#{gmt}"
     end
