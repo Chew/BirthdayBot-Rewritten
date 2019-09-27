@@ -7,7 +7,7 @@ module Bot::DiscordCommands
     Scheduler.cron('*/30 * * * *') do
       total = Bot::BOT.servers.count
       puts "SyncGlobal Status - Total Servers: #{total}"
-      m = Bot::BOT.channel(625812110781317120).send "Syncing every server's Birthdays!\nStatus: 0/#{total}"
+      m = Bot::BOT.channel(625812110781317120).send "[SHARD #{Bot::BOT.shard_key[0]}] Syncing every server's Birthdays!\nStatus: 0/#{total}"
 
       given = 0
       taken = 0
@@ -88,14 +88,9 @@ module Bot::DiscordCommands
           end
         end
 
-        status = i.to_f / bigbois.length * 100
-        if status.to_i / 10 > current.to_i / 10
-          current = status
-          m.edit "Syncing every server's Birthdays!\nStatus: #{current}% complete."
-        end
         puts "SyncGlobal Status - [#{i}] #{serv.name} (#{serv.id}) DONE"
       end
-      m.edit "Syncing complete. All servers synced, however #{norole} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]. The bot couldn't sync #{failed} due to permission errors."
+      m.edit "[SHARD #{Bot::BOT.shard_key[0]}] Syncing complete. All servers synced, however #{norole} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]. The bot couldn't sync #{failed} due to permission errors."
     end
 
     command(:sync) do |event|
