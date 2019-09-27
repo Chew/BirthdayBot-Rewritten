@@ -5,9 +5,14 @@ module Bot::DiscordCommands
   module Sync
     extend Discordrb::Commands::CommandContainer
     Scheduler.cron('*/30 * * * *') do
-      break
       total = Bot::BOT.servers.count
+      puts "SyncGlobal Status - Total Servers: #{total}"
       m = Bot::BOT.channel(625812110781317120).send "Syncing every server's Birthdays!\nStatus: 0/#{total}"
+
+      given = 0
+      taken = 0
+      unchanged = 0
+      failed = 0
 
       ays = Server.all
       sids = []
@@ -15,7 +20,6 @@ module Bot::DiscordCommands
         sids.push e.serverid
       end
       bigbois = Bot::BOT.servers
-      bigbois.delete_if { |e, _f| !sids.include?(e) }
 
       days = Birthday.all
       uids = {}
@@ -23,19 +27,25 @@ module Bot::DiscordCommands
         uids[e.userid] = [e.birthday, e.time_friendly_offset]
       end
 
-      given = 0
-      taken = 0
-      unchanged = 0
-
       i = 0
+
+      status = i.to_f / bigbois.length * 100
+      current = 0.0
+
+      m.edit "Syncing every server's Birthdays!\nStatus: #{current}% complete."
+      norole = 0
+
       no = 0
       bigbois.each do |id, serv|
         i += 1
-        server = Server.find_by(serverid: id)
-        if server.nil? || server.roleid.nil?
-          m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{total}"
-          break
+        if !sids.include?(id)
+          puts "SyncGlobal Status - [#{i}] Skipping #{serv.name} (#{serv.id}), no role ID."
+          norole += 1
+          next
         end
+        serv = Bot::BOT.server(id)
+        puts "SyncGlobal Status - [#{i}] Testing #{serv.name} (#{serv.id})"
+        server = Server.find_by(serverid: id)
 
         goodguys = serv.members
         goodguys.delete_if { |e| !uids.include?(e.id) }
@@ -55,22 +65,37 @@ module Bot::DiscordCommands
             if u.roles.include?(serv.role(server.roleid))
               unchanged += 1
             else
-              serv.member(u.id).add_role(server.roleid)
-              given += 1
+              begin
+                puts "SyncGlobal Status - Gave role to #{u.distinct} (#{u.id}) on #{serv.name} (#{serv.id})"
+                serv.member(u.id).add_role(server.roleid)
+                given += 1
+              rescue Discordrb::Errors::NoPermission
+                failed += 1
+              end
             end
           else
             if u.roles.include?(serv.role(server.roleid))
-              serv.member(u.id).remove_role(server.roleid)
-              taken += 1
+              begin
+                puts "SyncGlobal Status - Took role from #{u.distinct} (#{u.id}) on #{serv.name} (#{serv.id})"
+                serv.member(u.id).remove_role(server.roleid)
+                taken += 1
+              rescue Discordrb::Errors::NoPermission
+                failed += 1
+              end
             else
               unchanged += 1
             end
           end
         end
 
-        m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{total}"
+        status = i.to_f / bigbois.length * 100
+        if status.to_i / 10 > current.to_i / 10
+          current = status
+          m.edit "Syncing every server's Birthdays!\nStatus: #{current}% complete."
+        end
+        puts "SyncGlobal Status - [#{i}] #{serv.name} (#{serv.id}) DONE"
       end
-      m.edit "Syncing complete. All servers synced, however #{no} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]"
+      m.edit "Syncing complete. All servers synced, however #{norole} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]. The bot couldn't sync #{failed} due to permission errors."
     end
 
     command(:sync) do |event|
@@ -186,7 +211,10 @@ module Bot::DiscordCommands
 
       i = 0
 
-      m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{bigbois.length}."
+      status = i.to_f / bigbois.length * 100
+      current = 0.0
+
+      m.edit "Syncing every server's Birthdays!\nStatus: #{current}% complete."
       norole = 0
 
       no = 0
@@ -242,7 +270,11 @@ module Bot::DiscordCommands
           end
         end
 
-        m.edit "Syncing every server's Birthdays!\nStatus: #{i}/#{bigbois.length}."
+        status = i.to_f / bigbois.length * 100
+        if status.to_i / 10 > current.to_i / 10
+          current = status
+          m.edit "Syncing every server's Birthdays!\nStatus: #{current}% complete."
+        end
         puts "SyncGlobal Status - [#{i}] #{serv.name} (#{serv.id}) DONE"
       end
       m.edit "Syncing complete. All servers synced, however #{norole} servers didn't have a role.\nTotal Stats: [+#{given}/-#{taken}/±#{unchanged}]. The bot couldn't sync #{failed} due to permission errors."
